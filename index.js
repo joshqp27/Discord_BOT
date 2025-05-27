@@ -23,6 +23,147 @@ client.commands.set('ping', {
   },
 });
 
+client.commands.set('ban', {
+  name: 'ban',
+  description: 'Bannt einen Benutzer vom Server.',
+  async execute(client, message, args) {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
+      return message.reply('❌ Du hast keine Berechtigung zum Bannen.');
+    }
+
+    const member = message.mentions.members.first();
+    if (!member) return message.reply('❌ Bitte erwähne einen Benutzer.');
+    if (!member.bannable) return message.reply('❌ Ich kann diesen Benutzer nicht bannen.');
+
+    const reason = args.slice(1).join(' ') || 'Kein Grund angegeben';
+    await member.ban({ reason });
+    message.channel.send(`✅ ${member.user.tag} wurde gebannt. Grund: ${reason}`);
+  }
+});
+
+client.commands.set('kick', {
+  name: 'kick',
+  description: 'Kickt einen Benutzer vom Server.',
+  async execute(client, message, args) {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.KickMembers)) {
+      return message.reply('❌ Du darfst niemanden kicken.');
+    }
+
+    const member = message.mentions.members.first();
+    if (!member) return message.reply('❌ Bitte erwähne einen Benutzer.');
+    if (!member.kickable) return message.reply('❌ Ich kann diesen Benutzer nicht kicken.');
+
+    const reason = args.slice(1).join(' ') || 'Kein Grund angegeben';
+    await member.kick(reason);
+    message.channel.send(`✅ ${member.user.tag} wurde gekickt. Grund: ${reason}`);
+  }
+});
+
+client.commands.set('clearall', {
+  name: 'clearall',
+  description: 'Löscht alle Nachrichten im Kanal.',
+  async execute(client, message) {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+      return message.reply('❌ Keine Berechtigung zum Löschen.');
+    }
+
+    const fetched = await message.channel.messages.fetch({ limit: 100 });
+    message.channel.bulkDelete(fetched, true).then(() => {
+      message.channel.send('✅ Nachrichten gelöscht.').then(msg => setTimeout(() => msg.delete(), 3000));
+    });
+  }
+});
+
+client.commands.set('lock', {
+  name: 'lock',
+  description: 'Sperrt den Kanal für alle Benutzer.',
+  async execute(client, message) {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
+      return message.reply('❌ Du darfst den Kanal nicht sperren.');
+    }
+
+    await message.channel.permissionOverwrites.create(message.guild.roles.everyone, {
+      SendMessages: false
+    });
+    message.channel.send('🔒 Kanal gesperrt.');
+  }
+});
+
+client.commands.set('poll', {
+  name: 'poll',
+  description: 'Erstellt eine Umfrage.',
+  async execute(client, message, args) {
+    const question = args.join(' ');
+    if (!question) return message.reply('❓ Bitte gib eine Frage an.');
+
+    const pollEmbed = new EmbedBuilder()
+      .setColor(0x00AE86)
+      .setTitle('📊 Umfrage')
+      .setDescription(question)
+      .setFooter({ text: `Gestellt von ${message.author.tag}` })
+      .setTimestamp();
+
+    const pollMsg = await message.channel.send({ embeds: [pollEmbed] });
+    await pollMsg.react('👍');
+    await pollMsg.react('👎');
+  }
+});
+
+client.commands.set('say', {
+  name: 'say',
+  description: 'Sendet eine Nachricht als Bot.',
+  async execute(client, message, args) {
+    const text = args.join(' ');
+    if (!text) return message.reply('❌ Gib einen Text ein.');
+    message.delete().catch(() => {});
+    message.channel.send(text);
+  }
+});
+
+client.commands.set('embed', {
+  name: 'embed',
+  description: 'Sendet eine eingebettete Nachricht.',
+  async execute(client, message, args) {
+    const text = args.join(' ');
+    if (!text) return message.reply('❌ Gib einen Text ein.');
+
+    const embed = new EmbedBuilder()
+      .setTitle('📢 Nachricht')
+      .setDescription(text)
+      .setColor(0x3498db);
+
+    message.channel.send({ embeds: [embed] });
+  }
+});
+
+client.commands.set('ticket', {
+  name: 'ticket',
+  description: 'Erstellt ein Ticket (privater Channel).',
+  async execute(client, message) {
+    const category = message.guild.channels.cache.find(c => c.name === 'tickets' && c.type === ChannelType.GuildCategory);
+
+    const channel = await message.guild.channels.create({
+      name: `ticket-${message.author.username}`,
+      type: ChannelType.GuildText,
+      parent: category?.id,
+      permissionOverwrites: [
+        {
+          id: message.guild.roles.everyone,
+          deny: [PermissionsBitField.Flags.ViewChannel],
+        },
+        {
+          id: message.author.id,
+          allow: [PermissionsBitField.Flags.ViewChannel],
+        }
+      ]
+    });
+
+    channel.send(`🎟️ Ticket erstellt von <@${message.author.id}>`);
+    message.reply('✅ Dein Ticket wurde erstellt!');
+  }
+});
+
+
 client.commands.set('hilfe', {
   name: 'hilfe',
   description: 'Zeigt alle verfügbaren Befehle.',
