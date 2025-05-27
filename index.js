@@ -36,6 +36,18 @@ function loadCommands(dir) {
 }
 loadCommands(path.join(__dirname, 'commands'));
 
+const http = require('http');
+
+const port = process.env.PORT || 8000;
+
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('OK');
+}).listen(port, () => {
+  console.log(`Healthcheck server listening on port ${port}`);
+});
+
+
 // 🎉 Neumitglied: Rolle vergeben & Alt-Account-Check
 client.on('guildMemberAdd', async member => {
   const MIN_ACCOUNT_AGE = 1000 * 60 * 60 * 24 * 7; // 7 Tage
