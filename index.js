@@ -8,8 +8,6 @@ const {
   ChannelType,
   PermissionsBitField
 } = require('discord.js');
-const config = require('./config.json');
-
 
 const client = new Client({
   intents: [
@@ -37,9 +35,6 @@ function loadCommands(dir) {
   }
 }
 loadCommands(path.join(__dirname, 'commands'));
-
-
-
 
 // 🎉 Neumitglied: Rolle vergeben & Alt-Account-Check
 client.on('guildMemberAdd', async member => {
@@ -73,9 +68,10 @@ client.on('guildMemberAdd', async member => {
 
 // ⚙️ Befehle ausführen
 client.on('messageCreate', async message => {
-  if (!message.content.startsWith(config.prefix) || message.author.bot) return;
+  const prefix = process.env.PREFIX;
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-  const args = message.content.slice(config.prefix.length).trim().split(/ +/);
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
   const command = client.commands.get(commandName);
   if (!command) return;
@@ -95,4 +91,4 @@ client.on('messageCreate', async message => {
 });
 
 // 📡 Bot starten
-client.login({{ secrets.DISCORD_TOKEN }});
+client.login(process.env.DISCORD_TOKEN);
