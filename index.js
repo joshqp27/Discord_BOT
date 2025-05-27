@@ -95,4 +95,4 @@ client.on('messageCreate', async message => {
 });
 
 // 📡 Bot starten
-client.login('DISCORD_TOKEN');
+client.login(DISCORD_TOKEN);
