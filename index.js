@@ -95,4 +95,4 @@ client.on('messageCreate', async message => {
 });
 
 // 📡 Bot starten
-client.login(config.token);
+client.login('MTM2Nzk2OTIyNjEyMzM4Mjg2Ng.GEkkJ5.Yb4aVMyYRY_wkMI_-eAp4Q-GvcfeKrp3KV4-vA');
